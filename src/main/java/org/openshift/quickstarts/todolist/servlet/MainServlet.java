@@ -1,16 +1,19 @@
 package org.openshift.quickstarts.todolist.servlet;
 
-import org.openshift.quickstarts.todolist.model.TodoEntry;
-import org.openshift.quickstarts.todolist.service.TodoListService;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+
+import org.openshift.quickstarts.todolist.common.DBHelper;
+import org.openshift.quickstarts.todolist.model.TodoEntry;
+
+import com.mysql.jdbc.StringUtils;
 
 /**
  * The MainServlet returns the to-do list html on GET requests and handles the
@@ -18,7 +21,7 @@ import java.io.PrintWriter;
  */
 public class MainServlet extends HttpServlet {
 
-    private TodoListService todoListService = new TodoListService();
+//    private TodoListService todoListService = new TodoListService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -27,8 +30,17 @@ public class MainServlet extends HttpServlet {
     }
 
     private void writeHtml(PrintWriter out) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(getServletContext().getResourceAsStream("/WEB-INF/index.html"), "UTF-8"));
+    	BufferedReader reader = new BufferedReader(new InputStreamReader(getServletContext().getResourceAsStream("/WEB-INF/index.html"), "UTF-8"));
         try {
+        	DBHelper helper=new DBHelper();
+        	boolean res = helper.test();
+        	if(res){
+        		out.println("连接成功");
+        		out.println("连接地址:"+DBHelper.url);
+        	}else{
+        		out.println("连接失败");
+        		out.println("连接地址:"+DBHelper.url);
+        	}
             String line;
             boolean insideLoop = false;
             StringBuilder sb = new StringBuilder();
@@ -37,14 +49,6 @@ public class MainServlet extends HttpServlet {
                     insideLoop = true;
                 } else if (line.trim().equals("<!-- end repeat for each entry -->")) {
                     insideLoop = false;
-                    String entryTemplate = sb.toString();
-                    for (TodoEntry entry : todoListService.getAllEntries()) {
-                        out.println(
-                                entryTemplate
-                                        .replace("{{ summary }}", escapeHtml(entry.getSummary()))
-                                        .replace("{{ description }}", escapeHtml(entry.getDescription()))
-                        );
-                    }
                 } else if (insideLoop) {
                     sb.append(line).append("\n");
                 } else {
@@ -65,7 +69,11 @@ public class MainServlet extends HttpServlet {
         String summary = req.getParameter("summary");
         String description = req.getParameter("description");
 
-        todoListService.addEntry(new TodoEntry(summary, description));
+        if(!StringUtils.isEmptyOrWhitespaceOnly(summary)){
+        	DBHelper.url=summary;
+        }
+        
+//        todoListService.addEntry(new TodoEntry(summary, description));
 
         resp.sendRedirect("index.html");
     }

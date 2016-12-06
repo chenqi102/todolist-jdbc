@@ -1,15 +1,14 @@
 package org.openshift.quickstarts.todolist.common;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 public class MariaDBConn {  
     final String DBDRIVER = "org.mariadb.jdbc.Driver";  
-    final String DBURL = "jdbc:mariadb://localhost:3306/test";  
+    final String DBURL = "jdbc:mariadb://10.1.41.4:3306/sampledb";  
     //final String DBDRIVER = "com.mysql.jdbc.Driver"; //if you use mysql  
     //final String DBURL = "jdbc:mysql://localhost:3306/test";//if you use mysql  
-    final String DBUSER = "root";  
-    final String DBPWD = "123";  
+    final String DBUSER = "myuser";  
+    final String DBPWD = "root";  
     Connection conn = null;//数据库连接  
   
     public MariaDBConn() {  
